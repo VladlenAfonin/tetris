@@ -24,7 +24,9 @@ static inline void GridState_set(Grid grid, GridState grid_state, int x, int y, 
 }
 
 void Grid_draw(Grid grid, GridState grid_state);
-bool GridState_update_y(Grid grid, GridState *grid_state, Shape *current_shape);
-bool GridState_update_x(Grid grid, GridState *grid_state, Shape *current_shape, int input);
+/// Non-player related update.
+bool GridState_update_game(Grid grid, GridState *grid_state, Shape *current_shape);
+/// Player related update.
+bool GridState_update_player(Grid grid, GridState *grid_state, Shape *current_shape, int input, bool should_rotate);
 
 #endif // _GRID_H

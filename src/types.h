@@ -6,10 +6,10 @@
 typedef enum _ShapeType
 {
     // # # #
-    // #
+    //     #
     g_shaped,
     // # # #
-    //     #
+    // #
     g_shaped_reversed,
     // # #
     // # #
@@ -35,7 +35,7 @@ typedef enum _ShapeRotationDirection
     right = 1,
 } ShapeRotationDirection;
 
-/// A number mod 4, as there can only be 4 distinct rotations.
+/// A number mod 4, as there can be at most 4 distinct rotations.
 typedef int ShapeRotation;
 
 typedef struct _Shape

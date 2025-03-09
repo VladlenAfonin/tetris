@@ -35,6 +35,7 @@ int main(int argc, char **argv)
 
     float dt;
     float update_timer = 0.0F;
+    bool should_rotate = false;
     bool update_result;
     bool is_finished = false;
     int input = 0;
@@ -62,14 +63,20 @@ int main(int argc, char **argv)
             input = 0;
         }
 
+        if (IsKeyPressed(KEY_R))
+        {
+            should_rotate = true;
+        }
+
         dt = GetFrameTime();
         update_timer += dt;
 
-        GridState_update_x(grid, &grid_state, &current_shape, input);
+        GridState_update_player(grid, &grid_state, &current_shape, input, should_rotate);
+        should_rotate = false;
 
         if (update_timer > 0.2F)
         {
-            update_result = GridState_update_y(grid, &grid_state, &current_shape);
+            update_result = GridState_update_game(grid, &grid_state, &current_shape);
             if (!update_result)
             {
                 // TODO: Type must be sampled.

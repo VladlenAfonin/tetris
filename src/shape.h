@@ -14,7 +14,7 @@ static inline void Shape_rotate(Shape shape, ShapeRotationDirection direction)
 
 void Shape_set(Shape shape, Grid grid, GridState *grid_state);
 void Shape_unset(Shape shape, Grid grid, GridState *grid_state);
-bool Shape_is_enough_space(ShapeType shape_type, Grid grid, GridState grid_state, int x, int y);
+bool ShapeType_is_enough_space(ShapeType type, int rotation, Grid grid, GridState grid_state, int x, int y);
 bool Shape_is_enough_space_for_self(Shape shape, Grid grid, GridState grid_state);
 
 #endif // _SHAPE_H

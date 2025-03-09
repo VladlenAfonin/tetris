@@ -53,7 +53,7 @@ void Grid_draw(Grid grid, GridState grid_state)
     }
 }
 
-bool GridState_update_y(Grid grid, GridState *grid_state, Shape *current_shape)
+bool GridState_update_game(Grid grid, GridState *grid_state, Shape *current_shape)
 {
     CellType lower_cell;
     CellType current_cell;
@@ -67,7 +67,8 @@ bool GridState_update_y(Grid grid, GridState *grid_state, Shape *current_shape)
     {
     case g_shaped:
         Shape_unset(*current_shape, grid, grid_state);
-        if (!Shape_is_enough_space(type, grid, *grid_state, pos_x, new_pos_y))
+        if (!ShapeType_is_enough_space(current_shape->type, current_shape->rotation, grid, *grid_state, pos_x,
+                                       new_pos_y))
         {
             Shape_set(*current_shape, grid, grid_state);
             return false;
@@ -83,12 +84,16 @@ bool GridState_update_y(Grid grid, GridState *grid_state, Shape *current_shape)
     }
 }
 
-bool GridState_update_x(Grid grid, GridState *grid_state, Shape *current_shape, int input)
+bool GridState_update_player(Grid grid, GridState *grid_state, Shape *current_shape, int input, bool should_rotate)
 {
     CellType lower_cell;
     CellType current_cell;
 
     ShapeType type = current_shape->type;
+
+    int rotation = current_shape->rotation;
+    int new_rotation = should_rotate ? (rotation + 1) % 4 : rotation;
+
     int pos_x = current_shape->pos_x;
     int pos_y = current_shape->pos_y;
     int new_pos_x = pos_x + input;
@@ -97,12 +102,13 @@ bool GridState_update_x(Grid grid, GridState *grid_state, Shape *current_shape, 
     {
     case g_shaped:
         Shape_unset(*current_shape, grid, grid_state);
-        if (!Shape_is_enough_space(type, grid, *grid_state, new_pos_x, pos_y))
+        if (!ShapeType_is_enough_space(type, new_rotation, grid, *grid_state, new_pos_x, pos_y))
         {
             Shape_set(*current_shape, grid, grid_state);
             return false;
         }
 
+        current_shape->rotation = new_rotation;
         current_shape->pos_x = new_pos_x;
         Shape_set(*current_shape, grid, grid_state);
 
