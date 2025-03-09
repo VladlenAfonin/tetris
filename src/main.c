@@ -37,6 +37,7 @@ int main(int argc, char **argv)
     float update_timer = 0.0F;
     bool update_result;
     bool is_finished = false;
+    int input = 0;
     while (!WindowShouldClose())
     {
         if (is_finished)
@@ -48,12 +49,27 @@ int main(int argc, char **argv)
             continue;
         }
 
+        if (IsKeyPressed(KEY_A) || IsKeyPressed(KEY_LEFT))
+        {
+            input = -1;
+        }
+        else if (IsKeyPressed(KEY_D) || IsKeyPressed(KEY_RIGHT))
+        {
+            input = 1;
+        }
+        else
+        {
+            input = 0;
+        }
+
         dt = GetFrameTime();
         update_timer += dt;
 
+        GridState_update_x(grid, &grid_state, &current_shape, input);
+
         if (update_timer > 0.2F)
         {
-            update_result = GridState_update(grid, &grid_state, &current_shape);
+            update_result = GridState_update_y(grid, &grid_state, &current_shape);
             if (!update_result)
             {
                 // TODO: Type must be sampled.

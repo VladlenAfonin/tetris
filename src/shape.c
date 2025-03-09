@@ -35,7 +35,7 @@ static bool Shape_is_enough_space_g_shaped(Grid grid, GridState grid_state, int 
 {
     CellType cell;
 
-    if (x + 2 > grid.size_x || y + 1 > grid.size_y)
+    if (x < 0 || x + 3 > grid.size_x || y + 2 > grid.size_y)
     {
         return false;
     }

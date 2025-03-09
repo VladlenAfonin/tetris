@@ -53,7 +53,7 @@ void Grid_draw(Grid grid, GridState grid_state)
     }
 }
 
-bool GridState_update(Grid grid, GridState *grid_state, Shape *current_shape)
+bool GridState_update_y(Grid grid, GridState *grid_state, Shape *current_shape)
 {
     CellType lower_cell;
     CellType current_cell;
@@ -74,6 +74,36 @@ bool GridState_update(Grid grid, GridState *grid_state, Shape *current_shape)
         }
 
         current_shape->pos_y = new_pos_y;
+        Shape_set(*current_shape, grid, grid_state);
+
+        return true;
+    default:
+        return false;
+        break;
+    }
+}
+
+bool GridState_update_x(Grid grid, GridState *grid_state, Shape *current_shape, int input)
+{
+    CellType lower_cell;
+    CellType current_cell;
+
+    ShapeType type = current_shape->type;
+    int pos_x = current_shape->pos_x;
+    int pos_y = current_shape->pos_y;
+    int new_pos_x = pos_x + input;
+
+    switch (type)
+    {
+    case g_shaped:
+        Shape_unset(*current_shape, grid, grid_state);
+        if (!Shape_is_enough_space(type, grid, *grid_state, new_pos_x, pos_y))
+        {
+            Shape_set(*current_shape, grid, grid_state);
+            return false;
+        }
+
+        current_shape->pos_x = new_pos_x;
         Shape_set(*current_shape, grid, grid_state);
 
         return true;
