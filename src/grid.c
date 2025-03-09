@@ -1,5 +1,8 @@
 #include "grid.h"
 #include "raylib.h"
+#include "shape.h"
+#include "types.h"
+#include <stdio.h>
 
 static inline Rectangle Grid_get_cell(Grid grid, int grid_x, int grid_y)
 {
@@ -50,29 +53,32 @@ void Grid_draw(Grid grid, GridState grid_state)
     }
 }
 
-void GridState_update(Grid grid, GridState *grid_state)
+bool GridState_update(Grid grid, GridState *grid_state, Shape *current_shape)
 {
     CellType lower_cell;
     CellType current_cell;
 
-    for (int i = 0; i < grid.size_x; i++)
+    ShapeType type = current_shape->type;
+    int pos_x = current_shape->pos_x;
+    int pos_y = current_shape->pos_y;
+    int new_pos_y = pos_y + 1;
+
+    switch (type)
     {
-        for (int j = grid.size_y - 2; j > -1; j--)
+    case g_shaped:
+        Shape_unset(*current_shape, grid, grid_state);
+        if (!Shape_is_enough_space(type, grid, *grid_state, pos_x, new_pos_y))
         {
-            current_cell = GridState_get(grid, *grid_state, i, j);
-            if (empty == current_cell)
-            {
-                continue;
-            }
-
-            lower_cell = GridState_get(grid, *grid_state, i, j + 1);
-            if (empty != lower_cell)
-            {
-                continue;
-            }
-
-            GridState_set(grid, *grid_state, i, j + 1, current_cell);
-            GridState_set(grid, *grid_state, i, j, empty);
+            Shape_set(*current_shape, grid, grid_state);
+            return false;
         }
+
+        current_shape->pos_y = new_pos_y;
+        Shape_set(*current_shape, grid, grid_state);
+
+        return true;
+    default:
+        return false;
+        break;
     }
 }

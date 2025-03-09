@@ -1,23 +1,7 @@
 #ifndef _GRID_H
 #define _GRID_H
 
-#include "raylib.h"
-typedef struct _Grid
-{
-    const int size_x;
-    const int size_y;
-    const float side_size;
-    const float line_thickness;
-    const Vector2 offset;
-} Grid;
-
-typedef enum _CellType
-{
-    empty,
-    color_red,
-} CellType;
-
-typedef CellType GridState[];
+#include "types.h"
 
 #define GridState_create(var, grid) CellType var[grid.size_x * grid.size_y];
 #define GridState_init(grid_state, grid)                                                                               \
@@ -40,6 +24,6 @@ static inline void GridState_set(Grid grid, GridState grid_state, int x, int y, 
 }
 
 void Grid_draw(Grid grid, GridState grid_state);
-void GridState_update(Grid grid, GridState *grid_state);
+bool GridState_update(Grid grid, GridState *grid_state, Shape *current_shape);
 
 #endif // _GRID_H
