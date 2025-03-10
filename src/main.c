@@ -39,6 +39,9 @@ int main(int argc, char **argv)
     bool update_result;
     bool is_finished = false;
     int input = 0;
+    float const default_timer_threshold = 0.2F;
+    float const fast_timer_threshold = 0.01F;
+    float timer_threshold = default_timer_threshold;
     while (!WindowShouldClose())
     {
         if (is_finished)
@@ -63,6 +66,15 @@ int main(int argc, char **argv)
             input = 0;
         }
 
+        if (IsKeyDown(KEY_SPACE))
+        {
+            timer_threshold = fast_timer_threshold;
+        }
+        else
+        {
+            timer_threshold = default_timer_threshold;
+        }
+
         if (IsKeyPressed(KEY_R))
         {
             should_rotate = true;
@@ -74,7 +86,7 @@ int main(int argc, char **argv)
         GridState_update_player(grid, &grid_state, &current_shape, input, should_rotate);
         should_rotate = false;
 
-        if (update_timer > 0.2F)
+        if (update_timer > timer_threshold)
         {
             update_result = GridState_update_game(grid, &grid_state, &current_shape);
             if (!update_result)
