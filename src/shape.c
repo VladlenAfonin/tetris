@@ -1,255 +1,93 @@
 #include "shape.h"
 #include "grid.h"
+#include "types.h"
 #include <stdio.h>
 
-void Shape_unset(Shape shape, Grid grid, GridState *grid_state)
+// 4 rotations, 4 cells, 2 coordinates for each
+// First sort by rotation, then pairs of numbers tell you coordinates of each point.
+// Points are not necessarily sorted.
+// clang-format off
+static int g_shaped_numbers[4 * 2 * 4] = {
+    // # # #
+    //     #
+    0, 0, 1, 0, 2, 0, 2, 1,
+    //   #
+    //   #
+    // # #
+    1, 0, 1, 1, 1, 2, 0, 2,
+    // #
+    // # # #
+    0, 0, 0, 1, 1, 1, 2, 1,
+    // # #
+    // #
+    // #
+    0, 0, 1, 0, 0, 1, 0, 2,
+};
+// 4 rotations, borders for X and Y for each (in that order).
+static int g_shaped_rotation_borders[4 * 2] = {
+    3, 2,
+    2, 3,
+    3, 2,
+    2, 3,
+};
+// clang-format on
+
+static void Shape_apply(Shape shape, Grid grid, GridState *grid_state, CellType cell_type)
 {
+    int *row;
     switch (shape.type)
     {
     case g_shaped:
-        if (0 == shape.rotation)
+        row = g_shaped_numbers + shape.rotation * 8;
+        for (int i = 0; i < 4; i++)
         {
-            // # # #
-            //     #
-
-            GridState_set(grid, *grid_state, shape.pos_x, shape.pos_y, empty);
-            GridState_set(grid, *grid_state, shape.pos_x + 1, shape.pos_y, empty);
-            GridState_set(grid, *grid_state, shape.pos_x + 2, shape.pos_y, empty);
-            GridState_set(grid, *grid_state, shape.pos_x + 2, shape.pos_y + 1, empty);
-        }
-        else if (1 == shape.rotation)
-        {
-            //   #
-            //   #
-            // # #
-
-            GridState_set(grid, *grid_state, shape.pos_x + 1, shape.pos_y, empty);
-            GridState_set(grid, *grid_state, shape.pos_x + 1, shape.pos_y + 1, empty);
-            GridState_set(grid, *grid_state, shape.pos_x + 1, shape.pos_y + 2, empty);
-            GridState_set(grid, *grid_state, shape.pos_x, shape.pos_y + 2, empty);
-        }
-        else if (2 == shape.rotation)
-        {
-            // #
-            // # # #
-
-            GridState_set(grid, *grid_state, shape.pos_x, shape.pos_y, empty);
-            GridState_set(grid, *grid_state, shape.pos_x, shape.pos_y + 1, empty);
-            GridState_set(grid, *grid_state, shape.pos_x + 1, shape.pos_y + 1, empty);
-            GridState_set(grid, *grid_state, shape.pos_x + 2, shape.pos_y + 1, empty);
-        }
-        else if (3 == shape.rotation)
-        {
-            // # #
-            // #
-            // #
-
-            GridState_set(grid, *grid_state, shape.pos_x, shape.pos_y, empty);
-            GridState_set(grid, *grid_state, shape.pos_x + 1, shape.pos_y, empty);
-            GridState_set(grid, *grid_state, shape.pos_x, shape.pos_y + 1, empty);
-            GridState_set(grid, *grid_state, shape.pos_x, shape.pos_y + 2, empty);
+            GridState_set(grid, *grid_state, shape.pos_x + row[2 * i], shape.pos_y + row[2 * i + 1], cell_type);
         }
         break;
     default:
         break;
     }
+}
+
+void Shape_unset(Shape shape, Grid grid, GridState *grid_state)
+{
+    Shape_apply(shape, grid, grid_state, empty);
 }
 
 void Shape_set(Shape shape, Grid grid, GridState *grid_state)
 {
-    switch (shape.type)
+    // TODO: Make color parameter.
+    // TODO: Make color random in the calling function.
+    Shape_apply(shape, grid, grid_state, color_red);
+}
+
+static bool Shape_check_space(ShapeType shape, int rotation, Grid grid, GridState grid_state, int x, int y)
+{
+    int *row;
+    int *border_row;
+    CellType cell;
+    switch (shape)
     {
     case g_shaped:
-        if (0 == shape.rotation)
+        border_row = g_shaped_rotation_borders + rotation * 2;
+        if (x < 0 || x + border_row[0] > grid.size_x || y + border_row[1] > grid.size_y)
         {
-            // # # #
-            //     #
-
-            GridState_set(grid, *grid_state, shape.pos_x, shape.pos_y, color_red);
-            GridState_set(grid, *grid_state, shape.pos_x + 1, shape.pos_y, color_red);
-            GridState_set(grid, *grid_state, shape.pos_x + 2, shape.pos_y, color_red);
-            GridState_set(grid, *grid_state, shape.pos_x + 2, shape.pos_y + 1, color_red);
+            return false;
         }
-        else if (1 == shape.rotation)
+
+        row = g_shaped_numbers + rotation * 8;
+        for (int i = 0; i < 4; i++)
         {
-            //   #
-            //   #
-            // # #
-
-            GridState_set(grid, *grid_state, shape.pos_x + 1, shape.pos_y, color_red);
-            GridState_set(grid, *grid_state, shape.pos_x + 1, shape.pos_y + 1, color_red);
-            GridState_set(grid, *grid_state, shape.pos_x + 1, shape.pos_y + 2, color_red);
-            GridState_set(grid, *grid_state, shape.pos_x, shape.pos_y + 2, color_red);
+            cell = GridState_get(grid, grid_state, y + row[2 * i], x + row[2 * i + 1]);
+            if (empty != cell)
+            {
+                return false;
+            }
         }
-        else if (2 == shape.rotation)
-        {
-            // #
-            // # # #
 
-            GridState_set(grid, *grid_state, shape.pos_x, shape.pos_y, color_red);
-            GridState_set(grid, *grid_state, shape.pos_x, shape.pos_y + 1, color_red);
-            GridState_set(grid, *grid_state, shape.pos_x + 1, shape.pos_y + 1, color_red);
-            GridState_set(grid, *grid_state, shape.pos_x + 2, shape.pos_y + 1, color_red);
-        }
-        else if (3 == shape.rotation)
-        {
-            // # #
-            // #
-            // #
-
-            GridState_set(grid, *grid_state, shape.pos_x, shape.pos_y, color_red);
-            GridState_set(grid, *grid_state, shape.pos_x + 1, shape.pos_y, color_red);
-            GridState_set(grid, *grid_state, shape.pos_x, shape.pos_y + 1, color_red);
-            GridState_set(grid, *grid_state, shape.pos_x, shape.pos_y + 2, color_red);
-        }
         break;
     default:
         break;
-    }
-}
-
-static bool Shape_is_enough_space_g_shaped(ShapeType shape, int rotation, Grid grid, GridState grid_state, int x, int y)
-{
-    CellType cell;
-
-    if (0 == rotation)
-    {
-        // # # #
-        //     #
-
-        if (x < 0 || x + 3 > grid.size_x || y + 2 > grid.size_y)
-        {
-            return false;
-        }
-
-        cell = GridState_get(grid, grid_state, x, y);
-        if (empty != cell)
-        {
-            return false;
-        }
-
-        cell = GridState_get(grid, grid_state, x + 1, y);
-        if (empty != cell)
-        {
-            return false;
-        }
-
-        cell = GridState_get(grid, grid_state, x + 2, y);
-        if (empty != cell)
-        {
-            return false;
-        }
-
-        cell = GridState_get(grid, grid_state, x + 2, y + 1);
-        if (empty != cell)
-        {
-            return false;
-        }
-    }
-    else if (1 == rotation)
-    {
-        //   #
-        //   #
-        // # #
-
-        if (x < 0 || x + 2 > grid.size_x || y + 3 > grid.size_y)
-        {
-            return false;
-        }
-
-        cell = GridState_get(grid, grid_state, x + 1, y);
-        if (empty != cell)
-        {
-            printf("ASDF\n");
-            return false;
-        }
-
-        cell = GridState_get(grid, grid_state, x + 1, y + 1);
-        if (empty != cell)
-        {
-            return false;
-        }
-
-        cell = GridState_get(grid, grid_state, x + 1, y + 2);
-        if (empty != cell)
-        {
-            return false;
-        }
-
-        cell = GridState_get(grid, grid_state, x, y + 2);
-        if (empty != cell)
-        {
-            return false;
-        }
-    }
-    else if (2 == rotation)
-    {
-        // #
-        // # # #
-
-        if (x < 0 || x + 3 > grid.size_x || y + 2 > grid.size_y)
-        {
-            return false;
-        }
-
-        cell = GridState_get(grid, grid_state, x, y);
-        if (empty != cell)
-        {
-            return false;
-        }
-
-        cell = GridState_get(grid, grid_state, x, y + 1);
-        if (empty != cell)
-        {
-            return false;
-        }
-
-        cell = GridState_get(grid, grid_state, x + 1, y + 1);
-        if (empty != cell)
-        {
-            return false;
-        }
-
-        cell = GridState_get(grid, grid_state, x + 2, y + 1);
-        if (empty != cell)
-        {
-            return false;
-        }
-    }
-    else if (3 == rotation)
-    {
-        // # #
-        // #
-        // #
-
-        if (x < 0 || x + 2 > grid.size_x || y + 3 > grid.size_y)
-        {
-            return false;
-        }
-
-        cell = GridState_get(grid, grid_state, x, y);
-        if (empty != cell)
-        {
-            return false;
-        }
-
-        cell = GridState_get(grid, grid_state, x, y + 1);
-        if (empty != cell)
-        {
-            return false;
-        }
-
-        cell = GridState_get(grid, grid_state, x, y + 2);
-        if (empty != cell)
-        {
-            return false;
-        }
-
-        cell = GridState_get(grid, grid_state, x + 1, y);
-        if (empty != cell)
-        {
-            return false;
-        }
     }
 
     return true;
@@ -265,7 +103,7 @@ bool ShapeType_is_enough_space(ShapeType shape, int rotation, Grid grid, GridSta
     switch (shape)
     {
     case g_shaped:
-        return Shape_is_enough_space_g_shaped(shape, rotation, grid, grid_state, x, y);
+        return Shape_check_space(shape, rotation, grid, grid_state, x, y);
         break;
     default:
         break;
