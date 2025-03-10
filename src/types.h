@@ -16,11 +16,11 @@ typedef enum _ShapeType
     box = 3,
     // # # # #
     line = 4,
-    // # #
     //   # #
+    // # #
     z_shaped = 5,
-    //   # #
     // # #
+    //   # #
     z_shaped_reversed = 6,
     //   #
     // # # #

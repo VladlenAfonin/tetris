@@ -58,17 +58,167 @@ static int g_shaped_reversed_rotation_borders[4 * 2] = {
     2, 3,
 };
 
-static int box_numbers[8] = {
+static int box_numbers[4 * 8] = {
+    0, 0, 0, 1, 1, 0, 1, 1,
+    0, 0, 0, 1, 1, 0, 1, 1,
+    0, 0, 0, 1, 1, 0, 1, 1,
     0, 0, 0, 1, 1, 0, 1, 1,
 };
-static int box_rotation_borders[2] = {
+static int box_rotation_borders[2 * 4] = {
     2, 2,
+    2, 2,
+    2, 2,
+    2, 2,
+};
+
+static int line_numbers[4 * 8] = {
+    // # # # #
+    0, 0, 1, 0, 2, 0, 3, 0,
+    // #
+    // #
+    // #
+    // #
+    0, 0, 0, 1, 0, 2, 0, 3,
+
+    0, 0, 1, 0, 2, 0, 3, 0,
+    0, 0, 0, 1, 0, 2, 0, 3,
+};
+static int line_rotation_borders[2 * 4] = {
+    4, 1,
+    1, 4,
+    4, 1,
+    1, 4,
+};
+
+static int z_shaped_numbers[4 * 8] = {
+    //   # #
+    // # #
+    0, 1, 1, 0, 1, 1, 2, 0,
+    // #
+    // # #
+    //   #
+    0, 0, 0, 1, 1, 1, 1, 2,
+
+    0, 1, 1, 0, 1, 1, 2, 0,
+    0, 0, 0, 1, 1, 1, 1, 2,
+};
+static int z_shaped_rotation_borders[2 * 4] = {
+    3, 2,
+    2, 3,
+    3, 2,
+    2, 3,
+};
+
+static int z_shaped_reversed_numbers[4 * 8] = {
+    // # #
+    //   # #
+    0, 0, 1, 0, 1, 1, 2, 1,
+    //   #
+    // # #
+    // #
+    1, 0, 0, 1, 1, 1, 0, 2,
+
+    0, 0, 1, 0, 1, 1, 2, 1,
+    1, 0, 0, 1, 1, 1, 0, 2,
+};
+static int z_shaped_reversed_rotation_borders[2 * 4] = {
+    3, 2,
+    2, 3,
+    3, 2,
+    2, 3,
+};
+static int triangle_numbers[4 * 8] = {
+    //   #
+    // # # #
+    0, 1, 1, 0, 1, 1, 2, 1,
+    // #
+    // # #
+    // #
+    0, 0, 0, 1, 1, 1, 0, 2,
+    // # # #
+    //   #
+    0, 0, 1, 0, 2, 0, 1, 1,
+    //   #
+    // # #
+    //   #
+    0, 1, 1, 0, 1, 1, 1, 2,
+};
+static int triangle_rotation_borders[2 * 4] = {
+    3, 2,
+    2, 3,
+    3, 2,
+    2, 3,
 };
 // clang-format on
 
+static inline int *get_rotation_borders(ShapeType type, int rotation)
+{
+    switch (type)
+    {
+    case g_shaped:
+        return g_shaped_rotation_borders + rotation * 2;
+        break;
+    case g_shaped_reversed:
+        return g_shaped_reversed_rotation_borders + rotation * 2;
+        break;
+    case box:
+        return box_rotation_borders + rotation * 2;
+        break;
+    case line:
+        return line_rotation_borders + rotation * 2;
+        break;
+    case z_shaped:
+        return z_shaped_rotation_borders + rotation * 2;
+        break;
+    case z_shaped_reversed:
+        return z_shaped_reversed_rotation_borders + rotation * 2;
+        break;
+    case triangle:
+        return triangle_rotation_borders + rotation * 2;
+        break;
+    default:
+        // Unreachable.
+        // TODO: Print error, crash or something.
+        return NULL;
+        break;
+    }
+}
+
+static inline int *get_numbers(ShapeType type, int rotation)
+{
+    switch (type)
+    {
+    case g_shaped:
+        return g_shaped_numbers + rotation * 8;
+        break;
+    case g_shaped_reversed:
+        return g_shaped_reversed_numbers + rotation * 8;
+        break;
+    case box:
+        return box_numbers + rotation * 8;
+        break;
+    case line:
+        return line_numbers + rotation * 8;
+        break;
+    case z_shaped:
+        return z_shaped_numbers + rotation * 8;
+        break;
+    case z_shaped_reversed:
+        return z_shaped_reversed_numbers + rotation * 8;
+        break;
+    case triangle:
+        return triangle_numbers + rotation * 8;
+        break;
+    default:
+        // Unreachable.
+        return NULL;
+        break;
+    }
+}
+
 Shape get_random_shape()
 {
-    ShapeType random_type = (ShapeType)GetRandomValue(1, 3);
+    ShapeType random_type = (ShapeType)GetRandomValue(1, 7);
 
     return (Shape){
         .rotation = 0,
@@ -80,31 +230,10 @@ Shape get_random_shape()
 
 static void Shape_apply(Shape shape, Grid grid, GridState *grid_state, CellType cell_type)
 {
-    int *row;
-    switch (shape.type)
+    int *row = get_numbers(shape.type, shape.rotation);
+    for (int i = 0; i < 4; i++)
     {
-    case g_shaped:
-        row = g_shaped_numbers + shape.rotation * 8;
-        for (int i = 0; i < 4; i++)
-        {
-            GridState_set(grid, *grid_state, shape.pos_x + row[2 * i], shape.pos_y + row[2 * i + 1], cell_type);
-        }
-        break;
-    case g_shaped_reversed:
-        row = g_shaped_reversed_numbers + shape.rotation * 8;
-        for (int i = 0; i < 4; i++)
-        {
-            GridState_set(grid, *grid_state, shape.pos_x + row[2 * i], shape.pos_y + row[2 * i + 1], cell_type);
-        }
-        break;
-    case box:
-        row = box_numbers;
-        for (int i = 0; i < 4; i++)
-        {
-            GridState_set(grid, *grid_state, shape.pos_x + row[2 * i], shape.pos_y + row[2 * i + 1], cell_type);
-        }
-    default:
-        break;
+        GridState_set(grid, *grid_state, shape.pos_x + row[2 * i], shape.pos_y + row[2 * i + 1], cell_type);
     }
 }
 
@@ -122,67 +251,21 @@ void Shape_set(Shape shape, Grid grid, GridState *grid_state)
 
 static bool Shape_check_space(ShapeType shape, int rotation, Grid grid, GridState grid_state, int x, int y)
 {
-    int *row;
-    int *border_row;
-    CellType cell;
-    switch (shape)
+    int *border_row = get_rotation_borders(shape, rotation);
+    if (y < 0 || x < 0 || x + border_row[0] > grid.size_x || y + border_row[1] > grid.size_y)
     {
-    case g_shaped:
-        border_row = g_shaped_rotation_borders + rotation * 2;
-        if (x < 0 || x + border_row[0] > grid.size_x || y + border_row[1] > grid.size_y)
+        return false;
+    }
+
+    int *row = get_numbers(shape, rotation);
+    CellType cell;
+    for (int i = 0; i < 4; i++)
+    {
+        cell = GridState_get(grid, grid_state, x + row[2 * i], y + row[2 * i + 1]);
+        if (empty != cell)
         {
             return false;
         }
-
-        row = g_shaped_numbers + rotation * 8;
-        for (int i = 0; i < 4; i++)
-        {
-            cell = GridState_get(grid, grid_state, x + row[2 * i], y + row[2 * i + 1]);
-            if (empty != cell)
-            {
-                return false;
-            }
-        }
-
-        break;
-    case g_shaped_reversed:
-        border_row = g_shaped_reversed_rotation_borders + rotation * 2;
-        if (x < 0 || x + border_row[0] > grid.size_x || y + border_row[1] > grid.size_y)
-        {
-            return false;
-        }
-
-        row = g_shaped_reversed_numbers + rotation * 8;
-        for (int i = 0; i < 4; i++)
-        {
-            cell = GridState_get(grid, grid_state, x + row[2 * i], y + row[2 * i + 1]);
-            if (empty != cell)
-            {
-                return false;
-            }
-        }
-
-        break;
-    case box:
-        border_row = box_rotation_borders;
-        if (x < 0 || x + border_row[0] > grid.size_x || y + border_row[1] > grid.size_y)
-        {
-            return false;
-        }
-
-        row = box_numbers;
-        for (int i = 0; i < 4; i++)
-        {
-            cell = GridState_get(grid, grid_state, x + row[2 * i], y + row[2 * i + 1]);
-            if (empty != cell)
-            {
-                return false;
-            }
-        }
-
-        break;
-    default:
-        break;
     }
 
     return true;
