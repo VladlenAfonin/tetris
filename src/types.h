@@ -61,7 +61,7 @@ typedef struct _Grid
 typedef enum _CellType
 {
     empty,
-    color_red,
+    filled,
 } CellType;
 
 typedef struct _GridCell

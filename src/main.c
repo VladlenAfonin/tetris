@@ -5,6 +5,13 @@
 #include <stdlib.h>
 #include <time.h>
 
+typedef enum _Scene
+{
+    menu,
+    gameplay,
+    end,
+} Scene;
+
 int main(int argc, char **argv)
 {
     SetRandomSeed(time(NULL));
@@ -44,7 +51,7 @@ int main(int argc, char **argv)
     bool is_finished = false;
     int input = 0;
 
-    float const default_timer_threshold = 0.2F;
+    float const default_timer_threshold = 0.5F;
     float const fast_timer_threshold = 0.01F;
     float timer_threshold = default_timer_threshold;
 

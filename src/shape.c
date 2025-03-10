@@ -248,9 +248,7 @@ void Shape_unset(Shape shape, Grid grid, GridState *grid_state)
 
 void Shape_set(Shape shape, Grid grid, GridState *grid_state)
 {
-    // TODO: Make color parameter.
-    // TODO: Make color random in the calling function.
-    Shape_apply(shape, grid, grid_state, color_red);
+    Shape_apply(shape, grid, grid_state, filled);
 }
 
 static bool Shape_check_space(ShapeType shape, int rotation, Grid grid, GridState grid_state, int x, int y)

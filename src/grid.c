@@ -32,7 +32,7 @@ static inline void Grid_draw_cell_type(Grid grid, Rectangle rec, GridCell cell)
     case empty:
         Grid_draw_cell(grid, rec);
         break;
-    case color_red:
+    case filled:
         Grid_draw_cell_color(grid, rec, cell.color);
         break;
     default:
@@ -53,6 +53,64 @@ void Grid_draw(Grid grid, GridState grid_state)
     }
 }
 
+static bool row_complete(Grid grid, GridState grid_state, int y)
+{
+    GridCell cell;
+    for (int x = 0; x < grid.size_x; x++)
+    {
+        cell = GridState_get(grid, grid_state, x, y);
+        if (empty == cell.type)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static void row_clean(Grid grid, GridState *grid_state, int y)
+{
+    GridCell cell = {.type = empty, .color = BLACK};
+    for (int x = 0; x < grid.size_x; x++)
+    {
+        GridState_set(grid, *grid_state, x, y, cell);
+    }
+}
+
+static void GridState_shift_above(Grid grid, GridState *grid_state, int y_empty)
+{
+    GridCell cell;
+    for (int y = y_empty; y > 0; y--)
+    {
+        for (int x = 0; x < grid.size_x; x++)
+        {
+            cell = GridState_get(grid, *grid_state, x, y - 1);
+            GridState_set(grid, *grid_state, x, y, cell);
+        }
+    }
+
+    cell = (GridCell){.type = empty, .color = BLACK};
+    for (int x = 0; x < grid.size_x; x++)
+    {
+        GridState_set(grid, *grid_state, x, 0, cell);
+    }
+}
+
+static void GridState_cleanup(Grid grid, GridState *grid_state)
+{
+    for (int y = grid.size_y - 1; y > -1; y--)
+    {
+        if (!row_complete(grid, *grid_state, y))
+        {
+            continue;
+        }
+
+        row_clean(grid, grid_state, y);
+        GridState_shift_above(grid, grid_state, y);
+        y++;
+    }
+}
+
 bool GridState_update_game(Grid grid, GridState *grid_state, Shape *current_shape)
 {
     CellType lower_cell;
@@ -68,6 +126,7 @@ bool GridState_update_game(Grid grid, GridState *grid_state, Shape *current_shap
     if (!ShapeType_is_enough_space(type, rotation, grid, *grid_state, pos_x, new_pos_y))
     {
         Shape_set(*current_shape, grid, grid_state);
+        GridState_cleanup(grid, grid_state);
         return false;
     }
 
