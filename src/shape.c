@@ -1,4 +1,5 @@
 #include "shape.h"
+#include "colors.h"
 #include "grid.h"
 #include "raylib.h"
 #include "types.h"
@@ -219,12 +220,14 @@ static inline int *get_numbers(ShapeType type, int rotation)
 Shape get_random_shape()
 {
     ShapeType random_type = (ShapeType)GetRandomValue(1, 7);
+    Color random_color = get_random_color();
 
     return (Shape){
         .rotation = 0,
         .type = random_type,
         .pos_x = 4,
         .pos_y = 0,
+        .color = random_color,
     };
 }
 
@@ -233,7 +236,8 @@ static void Shape_apply(Shape shape, Grid grid, GridState *grid_state, CellType 
     int *row = get_numbers(shape.type, shape.rotation);
     for (int i = 0; i < 4; i++)
     {
-        GridState_set(grid, *grid_state, shape.pos_x + row[2 * i], shape.pos_y + row[2 * i + 1], cell_type);
+        GridState_set(grid, *grid_state, shape.pos_x + row[2 * i], shape.pos_y + row[2 * i + 1],
+                      (GridCell){.type = cell_type, .color = shape.color});
     }
 }
 
@@ -258,11 +262,11 @@ static bool Shape_check_space(ShapeType shape, int rotation, Grid grid, GridStat
     }
 
     int *row = get_numbers(shape, rotation);
-    CellType cell;
+    GridCell cell;
     for (int i = 0; i < 4; i++)
     {
         cell = GridState_get(grid, grid_state, x + row[2 * i], y + row[2 * i + 1]);
-        if (empty != cell)
+        if (empty != cell.type)
         {
             return false;
         }

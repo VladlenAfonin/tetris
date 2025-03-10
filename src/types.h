@@ -46,6 +46,7 @@ typedef struct _Shape
     int pos_y;
     ShapeType type;
     ShapeRotation rotation;
+    Color color;
 } Shape;
 
 typedef struct _Grid
@@ -63,6 +64,12 @@ typedef enum _CellType
     color_red,
 } CellType;
 
-typedef CellType GridState[];
+typedef struct _GridCell
+{
+    CellType type;
+    Color color;
+} GridCell;
+
+typedef GridCell GridState[];
 
 #endif // _TYPES_H

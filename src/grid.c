@@ -14,26 +14,26 @@ static inline Rectangle Grid_get_cell(Grid grid, int grid_x, int grid_y)
     };
 }
 
-static inline void Grid_draw_cell_color(Grid grid, Rectangle cell, Color color)
+static inline void Grid_draw_cell_color(Grid grid, Rectangle rec, Color color)
 {
-    DrawRectangleRec(cell, color);
-    DrawRectangleLinesEx(cell, grid.line_thickness, WHITE);
+    DrawRectangleRec(rec, color);
+    DrawRectangleLinesEx(rec, grid.line_thickness, WHITE);
 }
 
-static inline void Grid_draw_cell(Grid grid, Rectangle cell)
+static inline void Grid_draw_cell(Grid grid, Rectangle rec)
 {
-    DrawRectangleLinesEx(cell, grid.line_thickness, WHITE);
+    DrawRectangleLinesEx(rec, grid.line_thickness, WHITE);
 }
 
-static inline void Grid_draw_cell_type(Grid grid, Rectangle cell, CellType cell_type)
+static inline void Grid_draw_cell_type(Grid grid, Rectangle rec, GridCell cell)
 {
-    switch (cell_type)
+    switch (cell.type)
     {
     case empty:
-        Grid_draw_cell(grid, cell);
+        Grid_draw_cell(grid, rec);
         break;
     case color_red:
-        Grid_draw_cell_color(grid, cell, RED);
+        Grid_draw_cell_color(grid, rec, cell.color);
         break;
     default:
         break;
@@ -46,9 +46,9 @@ void Grid_draw(Grid grid, GridState grid_state)
     {
         for (int j = 0; j < grid.size_y; j++)
         {
-            Rectangle cell = Grid_get_cell(grid, i, j);
-            CellType cell_type = GridState_get(grid, grid_state, i, j);
-            Grid_draw_cell_type(grid, cell, cell_type);
+            Rectangle rec = Grid_get_cell(grid, i, j);
+            GridCell cell = GridState_get(grid, grid_state, i, j);
+            Grid_draw_cell_type(grid, rec, cell);
         }
     }
 }

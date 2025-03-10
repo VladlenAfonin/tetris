@@ -3,12 +3,8 @@
 
 #include "raylib.h"
 
-const Color Colors_red = RED;
-/* const Color Colors_yellow = YELLOW; */
-/* const Color Colors_green = GREEN; */
-/* const Color Colors_gray = GRAY; */
-/* const Color Colors_orange = ORANGE; */
-/* const Color Colors_violet = VIOLET; */
-/* const Color Colors_blue = BLUE; */
+static const Color colors[] = {RED, YELLOW, GREEN, GRAY, ORANGE, VIOLET, BLUE};
+
+Color get_random_color();
 
 #endif // _COLORS_H
