@@ -16,5 +16,6 @@ void Shape_set(Shape shape, Grid grid, GridState *grid_state);
 void Shape_unset(Shape shape, Grid grid, GridState *grid_state);
 bool ShapeType_is_enough_space(ShapeType type, int rotation, Grid grid, GridState grid_state, int x, int y);
 bool Shape_is_enough_space_for_self(Shape shape, Grid grid, GridState grid_state);
+Shape get_random_shape();
 
 #endif // _SHAPE_H

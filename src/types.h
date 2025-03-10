@@ -7,24 +7,24 @@ typedef enum _ShapeType
 {
     // # # #
     //     #
-    g_shaped,
+    g_shaped = 1,
     // # # #
     // #
-    g_shaped_reversed,
+    g_shaped_reversed = 2,
     // # #
     // # #
-    box,
+    box = 3,
     // # # # #
-    line,
+    line = 4,
     // # #
     //   # #
-    z_shaped,
+    z_shaped = 5,
     //   # #
     // # #
-    z_shaped_reversed,
+    z_shaped_reversed = 6,
     //   #
     // # # #
-    triangle,
+    triangle = 7,
 } ShapeType;
 
 typedef enum _ShapeRotationDirection

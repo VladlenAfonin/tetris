@@ -59,29 +59,22 @@ bool GridState_update_game(Grid grid, GridState *grid_state, Shape *current_shap
     CellType current_cell;
 
     ShapeType type = current_shape->type;
+    int rotation = current_shape->rotation;
     int pos_x = current_shape->pos_x;
     int pos_y = current_shape->pos_y;
     int new_pos_y = pos_y + 1;
 
-    switch (type)
+    Shape_unset(*current_shape, grid, grid_state);
+    if (!ShapeType_is_enough_space(type, rotation, grid, *grid_state, pos_x, new_pos_y))
     {
-    case g_shaped:
-        Shape_unset(*current_shape, grid, grid_state);
-        if (!ShapeType_is_enough_space(current_shape->type, current_shape->rotation, grid, *grid_state, pos_x,
-                                       new_pos_y))
-        {
-            Shape_set(*current_shape, grid, grid_state);
-            return false;
-        }
-
-        current_shape->pos_y = new_pos_y;
         Shape_set(*current_shape, grid, grid_state);
-
-        return true;
-    default:
         return false;
-        break;
     }
+
+    current_shape->pos_y = new_pos_y;
+    Shape_set(*current_shape, grid, grid_state);
+
+    return true;
 }
 
 bool GridState_update_player(Grid grid, GridState *grid_state, Shape *current_shape, int input, bool should_rotate)
@@ -98,23 +91,16 @@ bool GridState_update_player(Grid grid, GridState *grid_state, Shape *current_sh
     int pos_y = current_shape->pos_y;
     int new_pos_x = pos_x + input;
 
-    switch (type)
+    Shape_unset(*current_shape, grid, grid_state);
+    if (!ShapeType_is_enough_space(type, new_rotation, grid, *grid_state, new_pos_x, pos_y))
     {
-    case g_shaped:
-        Shape_unset(*current_shape, grid, grid_state);
-        if (!ShapeType_is_enough_space(type, new_rotation, grid, *grid_state, new_pos_x, pos_y))
-        {
-            Shape_set(*current_shape, grid, grid_state);
-            return false;
-        }
-
-        current_shape->rotation = new_rotation;
-        current_shape->pos_x = new_pos_x;
         Shape_set(*current_shape, grid, grid_state);
-
-        return true;
-    default:
         return false;
-        break;
     }
+
+    current_shape->rotation = new_rotation;
+    current_shape->pos_x = new_pos_x;
+    Shape_set(*current_shape, grid, grid_state);
+
+    return true;
 }

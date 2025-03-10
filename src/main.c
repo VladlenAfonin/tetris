@@ -3,9 +3,12 @@
 #include "shape.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 int main(int argc, char **argv)
 {
+    SetRandomSeed(time(NULL));
+
     int const menu_section_size = 300;
     int const target_fps = 60;
 
@@ -20,7 +23,8 @@ int main(int argc, char **argv)
     GridState_create(grid_state, grid);
     GridState_init(grid_state, grid);
 
-    Shape current_shape = {.type = g_shaped, .rotation = 0, .pos_x = 4, .pos_y = 0};
+    // TODO: Change to random shape.
+    Shape current_shape = get_random_shape();
     Shape_set(current_shape, grid, &grid_state);
 
     int const screen_width = grid.size_x * grid.side_size + 2 * grid.offset.x;
@@ -39,9 +43,11 @@ int main(int argc, char **argv)
     bool update_result;
     bool is_finished = false;
     int input = 0;
+
     float const default_timer_threshold = 0.2F;
     float const fast_timer_threshold = 0.01F;
     float timer_threshold = default_timer_threshold;
+
     while (!WindowShouldClose())
     {
         if (is_finished)
@@ -92,7 +98,7 @@ int main(int argc, char **argv)
             if (!update_result)
             {
                 // TODO: Type must be sampled.
-                current_shape = (Shape){.type = g_shaped, .rotation = 0, .pos_x = 4, .pos_y = 0};
+                current_shape = get_random_shape();
                 if (!Shape_is_enough_space_for_self(current_shape, grid, grid_state))
                 {
                     is_finished = true;
