@@ -78,7 +78,7 @@ static bool Shape_check_space(ShapeType shape, int rotation, Grid grid, GridStat
         row = g_shaped_numbers + rotation * 8;
         for (int i = 0; i < 4; i++)
         {
-            cell = GridState_get(grid, grid_state, y + row[2 * i], x + row[2 * i + 1]);
+            cell = GridState_get(grid, grid_state, x + row[2 * i], y + row[2 * i + 1]);
             if (empty != cell)
             {
                 return false;
