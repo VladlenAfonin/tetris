@@ -23,9 +23,9 @@ static inline void GridState_set(Grid grid, GridState grid_state, int x, int y, 
     grid_state[x + y * grid.size_x] = cell;
 }
 
-void Grid_draw(Grid grid, GridState grid_state);
+void Grid_draw(Grid grid, GridState grid_state, int screen_x, int screen_y);
 /// Non-player related update.
-bool GridState_update_game(Grid grid, GridState *grid_state, Shape *current_shape);
+bool GridState_update_game(Grid *grid, GridState *grid_state, Shape *current_shape);
 /// Player related update.
 bool GridState_update_player(Grid grid, GridState *grid_state, Shape *current_shape, int input, bool should_rotate);
 

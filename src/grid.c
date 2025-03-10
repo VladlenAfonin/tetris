@@ -8,10 +8,19 @@ static inline Rectangle Grid_get_cell(Grid grid, int grid_x, int grid_y)
 {
     return (Rectangle){
         .x = grid.offset.x + (float)grid_x * grid.side_size,
-        .y = grid.offset.y + (float)grid_y * grid.side_size,
+        .y = grid.offset.y + (float)grid_y * grid.side_size + (float)grid.score_height,
         .height = grid.side_size,
         .width = grid.side_size,
     };
+}
+
+static inline void Grid_draw_score(Grid grid, int screen_x, int screen_y)
+{
+    int score_font_size = 30;
+    char score_string[16] = {0};
+    sprintf(score_string, "%d", grid.score);
+    int score_string_size_x = MeasureText(score_string, score_font_size);
+    DrawText(score_string, (score_string_size_x + screen_x) / 2 - 14, 24, score_font_size, WHITE);
 }
 
 static inline void Grid_draw_cell_color(Grid grid, Rectangle rec, Color color)
@@ -40,7 +49,7 @@ static inline void Grid_draw_cell_type(Grid grid, Rectangle rec, GridCell cell)
     }
 }
 
-void Grid_draw(Grid grid, GridState grid_state)
+void Grid_draw(Grid grid, GridState grid_state, int screen_x, int screen_y)
 {
     for (int i = 0; i < grid.size_x; i++)
     {
@@ -51,6 +60,8 @@ void Grid_draw(Grid grid, GridState grid_state)
             Grid_draw_cell_type(grid, rec, cell);
         }
     }
+
+    Grid_draw_score(grid, screen_x, screen_y);
 }
 
 static bool row_complete(Grid grid, GridState grid_state, int y)
@@ -96,8 +107,10 @@ static void GridState_shift_above(Grid grid, GridState *grid_state, int y_empty)
     }
 }
 
-static void GridState_cleanup(Grid grid, GridState *grid_state)
+static int GridState_cleanup(Grid grid, GridState *grid_state)
 {
+    int cleaned_row_count = 0;
+
     for (int y = grid.size_y - 1; y > -1; y--)
     {
         if (!row_complete(grid, *grid_state, y))
@@ -108,10 +121,30 @@ static void GridState_cleanup(Grid grid, GridState *grid_state)
         row_clean(grid, grid_state, y);
         GridState_shift_above(grid, grid_state, y);
         y++;
+        cleaned_row_count++;
     }
+
+    if (cleaned_row_count == 1)
+    {
+        return 40;
+    }
+    else if (cleaned_row_count == 2)
+    {
+        return 100;
+    }
+    else if (cleaned_row_count == 3)
+    {
+        return 300;
+    }
+    else if (cleaned_row_count == 4)
+    {
+        return 1200;
+    }
+
+    return 0;
 }
 
-bool GridState_update_game(Grid grid, GridState *grid_state, Shape *current_shape)
+bool GridState_update_game(Grid *grid, GridState *grid_state, Shape *current_shape)
 {
     CellType lower_cell;
     CellType current_cell;
@@ -122,16 +155,16 @@ bool GridState_update_game(Grid grid, GridState *grid_state, Shape *current_shap
     int pos_y = current_shape->pos_y;
     int new_pos_y = pos_y + 1;
 
-    Shape_unset(*current_shape, grid, grid_state);
-    if (!ShapeType_is_enough_space(type, rotation, grid, *grid_state, pos_x, new_pos_y))
+    Shape_unset(*current_shape, *grid, grid_state);
+    if (!ShapeType_is_enough_space(type, rotation, *grid, *grid_state, pos_x, new_pos_y))
     {
-        Shape_set(*current_shape, grid, grid_state);
-        GridState_cleanup(grid, grid_state);
+        Shape_set(*current_shape, *grid, grid_state);
+        grid->score += GridState_cleanup(*grid, grid_state);
         return false;
     }
 
     current_shape->pos_y = new_pos_y;
-    Shape_set(*current_shape, grid, grid_state);
+    Shape_set(*current_shape, *grid, grid_state);
 
     return true;
 }

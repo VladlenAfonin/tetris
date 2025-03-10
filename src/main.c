@@ -18,13 +18,16 @@ int main(int argc, char **argv)
 
     int const menu_section_size = 300;
     int const target_fps = 60;
+    int const score_space = 80;
 
-    Grid const grid = {
+    Grid grid = {
         .size_x = 10,
         .size_y = 15,
         .side_size = 50.0F,
         .line_thickness = 1.0F,
-        .offset = (Vector2){.x = 10.0f, .y = 10.0F},
+        .offset = (Vector2){.x = 10.0F, .y = 10.0F},
+        .score = 0,
+        .score_height = score_space,
     };
 
     GridState_create(grid_state, grid);
@@ -35,7 +38,7 @@ int main(int argc, char **argv)
     Shape_set(current_shape, grid, &grid_state);
 
     int const screen_width = grid.size_x * grid.side_size + 2 * grid.offset.x;
-    int const screen_height = grid.size_y * grid.side_size + 2 * grid.offset.y;
+    int const screen_height = grid.size_y * grid.side_size + 2 * grid.offset.y + score_space;
 
     InitWindow(screen_width, screen_height, "RTetris");
     SetTargetFPS(target_fps);
@@ -55,6 +58,10 @@ int main(int argc, char **argv)
     float const fast_timer_threshold = 0.01F;
     float timer_threshold = default_timer_threshold;
 
+    char score_string[16] = {0};
+    int score_font_size = 30;
+    int score_string_size_x = 0;
+
     while (!WindowShouldClose())
     {
         if (is_finished)
@@ -62,6 +69,7 @@ int main(int argc, char **argv)
             BeginDrawing();
             ClearBackground(BLACK);
             DrawText("You lost!", (screen_width - text_size) / 2, screen_height / 2, font_size, WHITE);
+            DrawText(score_string, (score_string_size_x + screen_width) / 2 - 14, 24, score_font_size, WHITE);
             EndDrawing();
             continue;
         }
@@ -101,13 +109,15 @@ int main(int argc, char **argv)
 
         if (update_timer > timer_threshold)
         {
-            update_result = GridState_update_game(grid, &grid_state, &current_shape);
+            update_result = GridState_update_game(&grid, &grid_state, &current_shape);
             if (!update_result)
             {
                 // TODO: Type must be sampled.
                 current_shape = get_random_shape();
                 if (!Shape_is_enough_space_for_self(current_shape, grid, grid_state))
                 {
+                    sprintf(score_string, "%d", grid.score);
+                    score_string_size_x = MeasureText(score_string, score_font_size);
                     is_finished = true;
                 }
             }
@@ -116,7 +126,7 @@ int main(int argc, char **argv)
 
         BeginDrawing();
         ClearBackground(BLACK);
-        Grid_draw(grid, grid_state);
+        Grid_draw(grid, grid_state, screen_width, screen_height);
         EndDrawing();
     }
 

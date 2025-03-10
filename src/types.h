@@ -51,11 +51,13 @@ typedef struct _Shape
 
 typedef struct _Grid
 {
-    const int size_x;
-    const int size_y;
-    const float side_size;
-    const float line_thickness;
-    const Vector2 offset;
+    int const size_x;
+    int const size_y;
+    float const side_size;
+    float const line_thickness;
+    Vector2 const offset;
+    int const score_height;
+    int score;
 } Grid;
 
 typedef enum _CellType
