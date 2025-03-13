@@ -7,11 +7,10 @@
 #include <stdlib.h>
 #include <time.h>
 
-int main(int argc, char **argv)
+int main()
 {
     SetRandomSeed(time(NULL));
 
-    int const menu_section_size = 300;
     int const target_fps = 60;
     int const score_space = 80;
 

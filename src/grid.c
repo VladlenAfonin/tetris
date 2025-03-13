@@ -148,9 +148,6 @@ static int GridState_cleanup(GridState *grid_state)
 
 bool GridState_update_game(GridState *grid_state)
 {
-    CellType lower_cell;
-    CellType current_cell;
-
     ShapeType type = global_state.current_shape.type;
     int rotation = global_state.current_shape.rotation;
     int pos_x = global_state.current_shape.pos_x;
@@ -174,9 +171,6 @@ bool GridState_update_game(GridState *grid_state)
 
 bool GridState_update_player(GridState *grid_state, int input, bool should_rotate)
 {
-    CellType lower_cell;
-    CellType current_cell;
-
     ShapeType type = global_state.current_shape.type;
 
     int rotation = global_state.current_shape.rotation;

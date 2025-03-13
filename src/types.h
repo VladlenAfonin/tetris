@@ -82,4 +82,10 @@ typedef struct _GridCell
 
 typedef GridCell GridState[];
 
+typedef enum _Scene
+{
+    gameplay,
+    end,
+} Scene;
+
 #endif // _TYPES_H
