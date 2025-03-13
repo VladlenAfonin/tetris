@@ -23,7 +23,10 @@ int main()
         .score_height = score_space,
     };
 
-    global_state = (GlobalState){.score = 0};
+    global_state = (GlobalState){
+        .score = 0,
+        .current_scene = gameplay,
+    };
 
     GridState_create(grid_state);
     GridState_init(grid_state);
@@ -47,8 +50,6 @@ int main()
     float dt;
     float update_timer = 0.0F;
     bool should_rotate = false;
-    bool update_result;
-    bool is_finished = false;
     int input = 0;
 
     float const default_timer_threshold = 0.5F;
@@ -59,76 +60,83 @@ int main()
     int score_font_size = 30;
     int score_string_size_x = 0;
 
+    /* Rectangle restart_button_rec = { */
+    /*     .height = 60.0F, */
+    /*     .width = 60.0F, */
+    /*     .x = global_parameters.screen_size_x */
+    /* }; */
+
     while (!WindowShouldClose())
     {
-        if (is_finished)
+        switch (global_state.current_scene)
         {
+        case end:
             BeginDrawing();
             ClearBackground(BLACK);
             DrawText("You lost!", (global_parameters.screen_size_x - text_size) / 2,
                      global_parameters.screen_size_y / 2, font_size, WHITE);
-            DrawText(score_string, (global_parameters.screen_size_x - score_string_size_x) / 2, 24, score_font_size,
-                     WHITE);
+            DrawText(score_string, (global_parameters.screen_size_x - score_string_size_x) / 2,
+                     (global_parameters.score_height - score_font_size) / 2, score_font_size, WHITE);
+            // TODO: Display Restart button.
             EndDrawing();
             continue;
-        }
-
-        if (IsKeyPressed(KEY_A) || IsKeyPressed(KEY_LEFT))
-        {
-            input = -1;
-        }
-        else if (IsKeyPressed(KEY_D) || IsKeyPressed(KEY_RIGHT))
-        {
-            input = 1;
-        }
-        else
-        {
-            input = 0;
-        }
-
-        if (IsKeyDown(KEY_SPACE))
-        {
-            timer_threshold = fast_timer_threshold;
-        }
-        else
-        {
-            timer_threshold = default_timer_threshold;
-        }
-
-        if (IsKeyPressed(KEY_R))
-        {
-            should_rotate = true;
-        }
-
-        dt = GetFrameTime();
-        update_timer += dt;
-
-        GridState_update_player(&grid_state, input, should_rotate);
-        should_rotate = false;
-
-        if (update_timer > timer_threshold)
-        {
-            update_result = GridState_update_game(&grid_state);
-            if (!update_result)
+        case gameplay:
+            if (IsKeyPressed(KEY_A) || IsKeyPressed(KEY_LEFT))
             {
-                global_state.current_shape = get_random_shape();
-                if (!Shape_is_enough_space_for_self(global_state.current_shape, grid_state))
-                {
-                    sprintf(score_string, "%d", global_state.score);
-                    score_string_size_x = MeasureText(score_string, score_font_size);
-                    is_finished = true;
-                }
+                input = -1;
             }
-            update_timer = 0.0F;
-        }
+            else if (IsKeyPressed(KEY_D) || IsKeyPressed(KEY_RIGHT))
+            {
+                input = 1;
+            }
+            else
+            {
+                input = 0;
+            }
 
-        BeginDrawing();
-        ClearBackground(BLACK);
-        Grid_draw(grid_state);
-        EndDrawing();
+            if (IsKeyDown(KEY_SPACE))
+            {
+                timer_threshold = fast_timer_threshold;
+            }
+            else
+            {
+                timer_threshold = default_timer_threshold;
+            }
+
+            if (IsKeyPressed(KEY_R))
+            {
+                should_rotate = true;
+            }
+
+            dt = GetFrameTime();
+            update_timer += dt;
+
+            GridState_update_player(&grid_state, input, should_rotate);
+            should_rotate = false;
+
+            if (update_timer > timer_threshold)
+            {
+                if (!GridState_update_game(&grid_state))
+                {
+                    global_state.current_shape = get_random_shape();
+                    if (!Shape_is_enough_space_for_self(global_state.current_shape, grid_state))
+                    {
+                        sprintf(score_string, "%d", global_state.score);
+                        score_string_size_x = MeasureText(score_string, score_font_size);
+                        global_state.current_scene = end;
+                    }
+                }
+
+                update_timer = 0.0F;
+            }
+
+            BeginDrawing();
+            ClearBackground(BLACK);
+            Grid_draw(grid_state);
+            EndDrawing();
+        }
     }
 
     CloseWindow();
-
     return 0;
 }

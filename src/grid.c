@@ -22,7 +22,8 @@ static inline void Grid_draw_score()
     char score_string[16] = {0};
     sprintf(score_string, "%d", global_state.score);
     int score_string_size_x = MeasureText(score_string, score_font_size);
-    DrawText(score_string, (global_parameters.screen_size_x - score_string_size_x) / 2, 24, score_font_size, WHITE);
+    DrawText(score_string, (global_parameters.screen_size_x - score_string_size_x) / 2,
+             (global_parameters.score_height - score_font_size) / 2, score_font_size, WHITE);
 }
 
 static inline void Grid_draw_cell_color(Rectangle rec, Color color)

@@ -3,6 +3,12 @@
 
 #include "raylib.h"
 
+typedef enum _Scene
+{
+    gameplay,
+    end,
+} Scene;
+
 typedef enum _ShapeType
 {
     // # # #
@@ -66,6 +72,7 @@ typedef struct _GlobalState
     int score;
     Shape current_shape;
     Shape next_shape;
+    Scene current_scene;
 } GlobalState;
 
 typedef enum _CellType
@@ -81,11 +88,5 @@ typedef struct _GridCell
 } GridCell;
 
 typedef GridCell GridState[];
-
-typedef enum _Scene
-{
-    gameplay,
-    end,
-} Scene;
 
 #endif // _TYPES_H
