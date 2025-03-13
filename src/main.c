@@ -93,14 +93,19 @@ int main()
                     is_restart_requested = true;
                 }
 
-                if (is_restart_requested && IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+                if (is_restart_requested)
                 {
-                    global_state.current_scene = gameplay;
-                    global_state.score = 0;
-                    global_state.current_shape = get_random_shape();
-                    global_state.next_shape = get_random_shape();
+                    restart_button_color = GRAY;
 
-                    GridState_init(grid_state);
+                    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+                    {
+                        global_state.current_scene = gameplay;
+                        global_state.score = 0;
+                        global_state.current_shape = get_random_shape();
+                        global_state.next_shape = get_random_shape();
+
+                        GridState_init(grid_state);
+                    }
                 }
             }
             else
