@@ -60,24 +60,65 @@ int main()
     int score_font_size = 30;
     int score_string_size_x = 0;
 
-    /* Rectangle restart_button_rec = { */
-    /*     .height = 60.0F, */
-    /*     .width = 60.0F, */
-    /*     .x = global_parameters.screen_size_x */
-    /* }; */
+    char const *restart_button_text = "Restart";
+    int restart_button_text_size_x = MeasureText(restart_button_text, font_size);
+    int restart_button_padding_x = 20;
+    int restart_button_padding_y = 20;
+    float restart_button_offset_y = (float)(2 * font_size);
+    Color restart_button_color = RED;
+    Color restart_button_text_color = WHITE;
+    Rectangle restart_button_rec = {
+        .height = (float)font_size + 2 * restart_button_padding_y,
+        .width = (float)restart_button_text_size_x + 2 * restart_button_padding_x,
+        .x = global_parameters.screen_size_x / 2.0F,
+        .y = global_parameters.screen_size_y / 2.0F + restart_button_offset_y,
+    };
+    restart_button_rec.x -= restart_button_rec.width / 2.0F;
+    bool is_restart_requested = false;
 
+    Vector2 mouse_position;
     while (!WindowShouldClose())
     {
         switch (global_state.current_scene)
         {
         case end:
+            mouse_position = GetMousePosition();
+            if (CheckCollisionPointRec(mouse_position, restart_button_rec))
+            {
+                restart_button_color = WHITE;
+                restart_button_text_color = BLACK;
+
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
+                    is_restart_requested = true;
+                }
+
+                if (is_restart_requested && IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+                {
+                    global_state.current_scene = gameplay;
+                    global_state.score = 0;
+                    global_state.current_shape = get_random_shape();
+                    global_state.next_shape = get_random_shape();
+
+                    GridState_init(grid_state);
+                }
+            }
+            else
+            {
+                is_restart_requested = false;
+                restart_button_color = RED;
+                restart_button_text_color = WHITE;
+            }
+
             BeginDrawing();
             ClearBackground(BLACK);
             DrawText("You lost!", (global_parameters.screen_size_x - text_size) / 2,
                      global_parameters.screen_size_y / 2, font_size, WHITE);
             DrawText(score_string, (global_parameters.screen_size_x - score_string_size_x) / 2,
                      (global_parameters.score_height - score_font_size) / 2, score_font_size, WHITE);
-            // TODO: Display Restart button.
+            DrawRectangleRec(restart_button_rec, restart_button_color);
+            DrawText(restart_button_text, (restart_button_rec.x + restart_button_padding_x),
+                     (restart_button_rec.y + restart_button_padding_y), font_size, restart_button_text_color);
             EndDrawing();
             continue;
         case gameplay:
