@@ -1,6 +1,5 @@
 #include "colors.h"
 #include "raylib.h"
-#include <stdio.h>
 
 Color get_random_color()
 {

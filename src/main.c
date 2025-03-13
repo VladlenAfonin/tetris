@@ -1,16 +1,11 @@
+#include "globals.h"
 #include "grid.h"
 #include "raylib.h"
 #include "shape.h"
+#include "types.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
-typedef enum _Scene
-{
-    menu,
-    gameplay,
-    end,
-} Scene;
 
 int main(int argc, char **argv)
 {
@@ -20,27 +15,30 @@ int main(int argc, char **argv)
     int const target_fps = 60;
     int const score_space = 80;
 
-    Grid grid = {
+    global_parameters = (GlobalParameters){
         .size_x = 10,
         .size_y = 15,
         .side_size = 50.0F,
         .line_thickness = 1.0F,
         .offset = (Vector2){.x = 10.0F, .y = 10.0F},
-        .score = 0,
         .score_height = score_space,
     };
 
-    GridState_create(grid_state, grid);
-    GridState_init(grid_state, grid);
+    global_state = (GlobalState){.score = 0};
 
-    // TODO: Change to random shape.
-    Shape current_shape = get_random_shape();
-    Shape_set(current_shape, grid, &grid_state);
+    GridState_create(grid_state);
+    GridState_init(grid_state);
 
-    int const screen_width = grid.size_x * grid.side_size + 2 * grid.offset.x;
-    int const screen_height = grid.size_y * grid.side_size + 2 * grid.offset.y + score_space;
+    global_state.current_shape = get_random_shape();
+    global_state.next_shape = get_random_shape();
+    Shape_set(global_state.current_shape, &grid_state);
 
-    InitWindow(screen_width, screen_height, "RTetris");
+    global_parameters.screen_size_x =
+        global_parameters.size_x * global_parameters.side_size + 2 * global_parameters.offset.x;
+    global_parameters.screen_size_y =
+        global_parameters.size_y * global_parameters.side_size + 2 * global_parameters.offset.y + score_space;
+
+    InitWindow(global_parameters.screen_size_x, global_parameters.screen_size_y, "RTetris");
     SetTargetFPS(target_fps);
 
     char const *finished_text = "You lost!";
@@ -68,8 +66,10 @@ int main(int argc, char **argv)
         {
             BeginDrawing();
             ClearBackground(BLACK);
-            DrawText("You lost!", (screen_width - text_size) / 2, screen_height / 2, font_size, WHITE);
-            DrawText(score_string, (score_string_size_x + screen_width) / 2 - 14, 24, score_font_size, WHITE);
+            DrawText("You lost!", (global_parameters.screen_size_x - text_size) / 2,
+                     global_parameters.screen_size_y / 2, font_size, WHITE);
+            DrawText(score_string, (global_parameters.screen_size_x - score_string_size_x) / 2, 24, score_font_size,
+                     WHITE);
             EndDrawing();
             continue;
         }
@@ -104,19 +104,18 @@ int main(int argc, char **argv)
         dt = GetFrameTime();
         update_timer += dt;
 
-        GridState_update_player(grid, &grid_state, &current_shape, input, should_rotate);
+        GridState_update_player(&grid_state, input, should_rotate);
         should_rotate = false;
 
         if (update_timer > timer_threshold)
         {
-            update_result = GridState_update_game(&grid, &grid_state, &current_shape);
+            update_result = GridState_update_game(&grid_state);
             if (!update_result)
             {
-                // TODO: Type must be sampled.
-                current_shape = get_random_shape();
-                if (!Shape_is_enough_space_for_self(current_shape, grid, grid_state))
+                global_state.current_shape = get_random_shape();
+                if (!Shape_is_enough_space_for_self(global_state.current_shape, grid_state))
                 {
-                    sprintf(score_string, "%d", grid.score);
+                    sprintf(score_string, "%d", global_state.score);
                     score_string_size_x = MeasureText(score_string, score_font_size);
                     is_finished = true;
                 }
@@ -126,7 +125,7 @@ int main(int argc, char **argv)
 
         BeginDrawing();
         ClearBackground(BLACK);
-        Grid_draw(grid, grid_state, screen_width, screen_height);
+        Grid_draw(grid_state);
         EndDrawing();
     }
 

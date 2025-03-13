@@ -1,32 +1,33 @@
 #ifndef _GRID_H
 #define _GRID_H
 
+#include "globals.h"
 #include "types.h"
 
-#define GridState_create(var, grid) GridCell var[grid.size_x * grid.size_y];
-#define GridState_init(grid_state, grid)                                                                               \
-    for (int i = 0; i < grid.size_y; i++)                                                                              \
+#define GridState_create(var) GridCell var[global_parameters.size_x * global_parameters.size_y];
+#define GridState_init(grid_state)                                                                                     \
+    for (int i = 0; i < global_parameters.size_y; i++)                                                                 \
     {                                                                                                                  \
-        for (int j = 0; j < grid.size_x; j++)                                                                          \
+        for (int j = 0; j < global_parameters.size_x; j++)                                                             \
         {                                                                                                              \
-            grid_state[j + i * grid.size_x] = (GridCell){.type = empty, .color = BLACK};                               \
+            grid_state[j + i * global_parameters.size_x] = (GridCell){.type = empty, .color = BLACK};                  \
         }                                                                                                              \
     }
 
-static inline GridCell GridState_get(Grid grid, GridState grid_state, int x, int y)
+static inline GridCell GridState_get(GridState grid_state, int x, int y)
 {
-    return grid_state[x + y * grid.size_x];
+    return grid_state[x + y * global_parameters.size_x];
 }
 
-static inline void GridState_set(Grid grid, GridState grid_state, int x, int y, GridCell cell)
+static inline void GridState_set(GridState grid_state, int x, int y, GridCell cell)
 {
-    grid_state[x + y * grid.size_x] = cell;
+    grid_state[x + y * global_parameters.size_x] = cell;
 }
 
-void Grid_draw(Grid grid, GridState grid_state, int screen_x, int screen_y);
+void Grid_draw(GridState grid_state);
 /// Non-player related update.
-bool GridState_update_game(Grid *grid, GridState *grid_state, Shape *current_shape);
+bool GridState_update_game(GridState *grid_state);
 /// Player related update.
-bool GridState_update_player(Grid grid, GridState *grid_state, Shape *current_shape, int input, bool should_rotate);
+bool GridState_update_player(GridState *grid_state, int input, bool should_rotate);
 
 #endif // _GRID_H

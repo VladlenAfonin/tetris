@@ -49,16 +49,24 @@ typedef struct _Shape
     Color color;
 } Shape;
 
-typedef struct _Grid
+typedef struct _GlobalParameters
 {
-    int const size_x;
-    int const size_y;
-    float const side_size;
-    float const line_thickness;
-    Vector2 const offset;
-    int const score_height;
+    int size_x;
+    int size_y;
+    float side_size;
+    float line_thickness;
+    Vector2 offset;
+    int score_height;
+    int screen_size_x;
+    int screen_size_y;
+} GlobalParameters;
+
+typedef struct _GlobalState
+{
     int score;
-} Grid;
+    Shape current_shape;
+    Shape next_shape;
+} GlobalState;
 
 typedef enum _CellType
 {

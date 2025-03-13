@@ -1,75 +1,77 @@
 #include "grid.h"
+#include "globals.h"
 #include "raylib.h"
 #include "shape.h"
 #include "types.h"
 #include <stdio.h>
 
-static inline Rectangle Grid_get_cell(Grid grid, int grid_x, int grid_y)
+static inline Rectangle Grid_get_cell(int grid_x, int grid_y)
 {
     return (Rectangle){
-        .x = grid.offset.x + (float)grid_x * grid.side_size,
-        .y = grid.offset.y + (float)grid_y * grid.side_size + (float)grid.score_height,
-        .height = grid.side_size,
-        .width = grid.side_size,
+        .x = global_parameters.offset.x + (float)grid_x * global_parameters.side_size,
+        .y = global_parameters.offset.y + (float)grid_y * global_parameters.side_size +
+             (float)global_parameters.score_height,
+        .height = global_parameters.side_size,
+        .width = global_parameters.side_size,
     };
 }
 
-static inline void Grid_draw_score(Grid grid, int screen_x, int screen_y)
+static inline void Grid_draw_score()
 {
     int score_font_size = 30;
     char score_string[16] = {0};
-    sprintf(score_string, "%d", grid.score);
+    sprintf(score_string, "%d", global_state.score);
     int score_string_size_x = MeasureText(score_string, score_font_size);
-    DrawText(score_string, (score_string_size_x + screen_x) / 2 - 14, 24, score_font_size, WHITE);
+    DrawText(score_string, (global_parameters.screen_size_x - score_string_size_x) / 2, 24, score_font_size, WHITE);
 }
 
-static inline void Grid_draw_cell_color(Grid grid, Rectangle rec, Color color)
+static inline void Grid_draw_cell_color(Rectangle rec, Color color)
 {
     DrawRectangleRec(rec, color);
-    DrawRectangleLinesEx(rec, grid.line_thickness, WHITE);
+    DrawRectangleLinesEx(rec, global_parameters.line_thickness, WHITE);
 }
 
-static inline void Grid_draw_cell(Grid grid, Rectangle rec)
+static inline void Grid_draw_cell(Rectangle rec)
 {
-    DrawRectangleLinesEx(rec, grid.line_thickness, WHITE);
+    DrawRectangleLinesEx(rec, global_parameters.line_thickness, WHITE);
 }
 
-static inline void Grid_draw_cell_type(Grid grid, Rectangle rec, GridCell cell)
+static inline void Grid_draw_cell_type(Rectangle rec, GridCell cell)
 {
     switch (cell.type)
     {
     case empty:
-        Grid_draw_cell(grid, rec);
+        Grid_draw_cell(rec);
         break;
     case filled:
-        Grid_draw_cell_color(grid, rec, cell.color);
+        Grid_draw_cell_color(rec, cell.color);
         break;
     default:
         break;
     }
 }
 
-void Grid_draw(Grid grid, GridState grid_state, int screen_x, int screen_y)
+void Grid_draw(GridState grid_state)
 {
-    for (int i = 0; i < grid.size_x; i++)
+    for (int i = 0; i < global_parameters.size_x; i++)
     {
-        for (int j = 0; j < grid.size_y; j++)
+        for (int j = 0; j < global_parameters.size_y; j++)
         {
-            Rectangle rec = Grid_get_cell(grid, i, j);
-            GridCell cell = GridState_get(grid, grid_state, i, j);
-            Grid_draw_cell_type(grid, rec, cell);
+            Rectangle rec = Grid_get_cell(i, j);
+            GridCell cell = GridState_get(grid_state, i, j);
+            Grid_draw_cell_type(rec, cell);
         }
     }
 
-    Grid_draw_score(grid, screen_x, screen_y);
+    Grid_draw_score();
 }
 
-static bool row_complete(Grid grid, GridState grid_state, int y)
+static bool row_complete(GridState grid_state, int y)
 {
     GridCell cell;
-    for (int x = 0; x < grid.size_x; x++)
+    for (int x = 0; x < global_parameters.size_x; x++)
     {
-        cell = GridState_get(grid, grid_state, x, y);
+        cell = GridState_get(grid_state, x, y);
         if (empty == cell.type)
         {
             return false;
@@ -79,47 +81,47 @@ static bool row_complete(Grid grid, GridState grid_state, int y)
     return true;
 }
 
-static void row_clean(Grid grid, GridState *grid_state, int y)
+static void row_clean(GridState *grid_state, int y)
 {
     GridCell cell = {.type = empty, .color = BLACK};
-    for (int x = 0; x < grid.size_x; x++)
+    for (int x = 0; x < global_parameters.size_x; x++)
     {
-        GridState_set(grid, *grid_state, x, y, cell);
+        GridState_set(*grid_state, x, y, cell);
     }
 }
 
-static void GridState_shift_above(Grid grid, GridState *grid_state, int y_empty)
+static void GridState_shift_above(GridState *grid_state, int y_empty)
 {
     GridCell cell;
     for (int y = y_empty; y > 0; y--)
     {
-        for (int x = 0; x < grid.size_x; x++)
+        for (int x = 0; x < global_parameters.size_x; x++)
         {
-            cell = GridState_get(grid, *grid_state, x, y - 1);
-            GridState_set(grid, *grid_state, x, y, cell);
+            cell = GridState_get(*grid_state, x, y - 1);
+            GridState_set(*grid_state, x, y, cell);
         }
     }
 
     cell = (GridCell){.type = empty, .color = BLACK};
-    for (int x = 0; x < grid.size_x; x++)
+    for (int x = 0; x < global_parameters.size_x; x++)
     {
-        GridState_set(grid, *grid_state, x, 0, cell);
+        GridState_set(*grid_state, x, 0, cell);
     }
 }
 
-static int GridState_cleanup(Grid grid, GridState *grid_state)
+static int GridState_cleanup(GridState *grid_state)
 {
     int cleaned_row_count = 0;
 
-    for (int y = grid.size_y - 1; y > -1; y--)
+    for (int y = global_parameters.size_y - 1; y > -1; y--)
     {
-        if (!row_complete(grid, *grid_state, y))
+        if (!row_complete(*grid_state, y))
         {
             continue;
         }
 
-        row_clean(grid, grid_state, y);
-        GridState_shift_above(grid, grid_state, y);
+        row_clean(grid_state, y);
+        GridState_shift_above(grid_state, y);
         y++;
         cleaned_row_count++;
     }
@@ -144,55 +146,56 @@ static int GridState_cleanup(Grid grid, GridState *grid_state)
     return 0;
 }
 
-bool GridState_update_game(Grid *grid, GridState *grid_state, Shape *current_shape)
+bool GridState_update_game(GridState *grid_state)
 {
     CellType lower_cell;
     CellType current_cell;
 
-    ShapeType type = current_shape->type;
-    int rotation = current_shape->rotation;
-    int pos_x = current_shape->pos_x;
-    int pos_y = current_shape->pos_y;
+    ShapeType type = global_state.current_shape.type;
+    int rotation = global_state.current_shape.rotation;
+    int pos_x = global_state.current_shape.pos_x;
+    int pos_y = global_state.current_shape.pos_y;
     int new_pos_y = pos_y + 1;
 
-    Shape_unset(*current_shape, *grid, grid_state);
-    if (!ShapeType_is_enough_space(type, rotation, *grid, *grid_state, pos_x, new_pos_y))
+    Shape_unset(global_state.current_shape, grid_state);
+    if (!ShapeType_is_enough_space(type, rotation, *grid_state, pos_x, new_pos_y))
     {
-        Shape_set(*current_shape, *grid, grid_state);
-        grid->score += GridState_cleanup(*grid, grid_state);
+        Shape_set(global_state.current_shape, grid_state);
+        global_state.score += GridState_cleanup(grid_state);
         return false;
     }
 
-    current_shape->pos_y = new_pos_y;
-    Shape_set(*current_shape, *grid, grid_state);
+    // This may be erroneous.
+    global_state.current_shape.pos_y = new_pos_y;
+    Shape_set(global_state.current_shape, grid_state);
 
     return true;
 }
 
-bool GridState_update_player(Grid grid, GridState *grid_state, Shape *current_shape, int input, bool should_rotate)
+bool GridState_update_player(GridState *grid_state, int input, bool should_rotate)
 {
     CellType lower_cell;
     CellType current_cell;
 
-    ShapeType type = current_shape->type;
+    ShapeType type = global_state.current_shape.type;
 
-    int rotation = current_shape->rotation;
+    int rotation = global_state.current_shape.rotation;
     int new_rotation = should_rotate ? (rotation + 1) % 4 : rotation;
 
-    int pos_x = current_shape->pos_x;
-    int pos_y = current_shape->pos_y;
+    int pos_x = global_state.current_shape.pos_x;
+    int pos_y = global_state.current_shape.pos_y;
     int new_pos_x = pos_x + input;
 
-    Shape_unset(*current_shape, grid, grid_state);
-    if (!ShapeType_is_enough_space(type, new_rotation, grid, *grid_state, new_pos_x, pos_y))
+    Shape_unset(global_state.current_shape, grid_state);
+    if (!ShapeType_is_enough_space(type, new_rotation, *grid_state, new_pos_x, pos_y))
     {
-        Shape_set(*current_shape, grid, grid_state);
+        Shape_set(global_state.current_shape, grid_state);
         return false;
     }
 
-    current_shape->rotation = new_rotation;
-    current_shape->pos_x = new_pos_x;
-    Shape_set(*current_shape, grid, grid_state);
+    global_state.current_shape.rotation = new_rotation;
+    global_state.current_shape.pos_x = new_pos_x;
+    Shape_set(global_state.current_shape, grid_state);
 
     return true;
 }
